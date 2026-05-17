@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -27,18 +28,22 @@ class LiquidityCache:
 
     def _load(self):
         if not self._path.exists():
-            logger.info("Cache de liquidez não encontrado em %s, iniciando vazio.", self._path)
+            logger.info("[LIQUIDEZ] Arquivo de cache não encontrado, iniciando vazio.")
             return
         try:
             with open(self._path) as f:
                 self._data = json.load(f)
+            any_entry = next(iter(self._data.values()), {})
+            age = (time.time() - any_entry.get("fetched_at", 0)) / 3600
+            logger.info("[LIQUIDEZ] Cache carregado do disco: %d itens (idade: %.1fh).", len(self._data), age)
         except (json.JSONDecodeError, OSError) as e:
-            logger.error("Erro ao carregar cache de liquidez: %s", e)
+            logger.error("[LIQUIDEZ] Erro ao carregar cache: %s", e)
 
     def _save(self):
         self._path.parent.mkdir(parents=True, exist_ok=True)
         with open(self._path, "w") as f:
             json.dump(self._data, f, indent=2, ensure_ascii=False)
+        logger.info("[LIQUIDEZ] Cache salvo em %s.", self._path)
 
     def is_stale(self) -> bool:
         if not self._data:
@@ -59,16 +64,13 @@ class LiquidityCache:
     def populate(self):
         api_key = os.environ.get("SKINSTRACK_API_KEY")
         if not api_key:
-            logger.warning("SKINSTRACK_API_KEY não definida, pulando consulta de liquidez.")
+            logger.warning("[LIQUIDEZ] SKINSTRACK_API_KEY não definida. Pulando atualização.")
             return
 
-        if not self.is_stale():
-            logger.info("Cache de liquidez ainda válido (%d itens).", len(self._data))
-            return
-
-        logger.info("Baixando cache completo de liquidez da SkinsTrack...")
+        logger.info("[LIQUIDEZ] Descartando cache anterior (%d itens). Consultando SkinsTrack API (/paid/items)...", len(self._data))
 
         try:
+            t0 = time.time()
             resp = httpx.get(
                 f"{SKINSTRACK_API_URL}/paid/items",
                 params={"median": "true"},
@@ -77,22 +79,31 @@ class LiquidityCache:
             )
             resp.raise_for_status()
             items = resp.json()
+            elapsed = time.time() - t0
+            logger.info("[LIQUIDEZ] API respondeu em %.1fs com %d itens.", elapsed, len(items))
         except httpx.HTTPError as e:
-            logger.error("Erro ao consultar SkinsTrack: %s", e)
+            logger.error("[LIQUIDEZ] Falha na consulta à SkinsTrack: %s", e)
             return
 
         now = time.time()
         self._data = {}
+        with_median = 0
         for item in items:
             mhn = item.get("market_hash_name", "")
             if not mhn:
                 continue
             median_obj = item.get("median") or {}
+            median_7d = median_obj.get("7d")
+            if median_7d is not None:
+                with_median += 1
             self._data[mhn] = {
-                "median_7d": median_obj.get("7d"),
+                "median_7d": median_7d,
                 "liquidity": item.get("liquidity", 0),
                 "fetched_at": now,
             }
 
         self._save()
-        logger.info("Cache de liquidez atualizado: %d itens.", len(self._data))
+        logger.info(
+            "[LIQUIDEZ] Cache atualizado: %d itens totais, %d com mediana 7d.",
+            len(self._data), with_median,
+        )

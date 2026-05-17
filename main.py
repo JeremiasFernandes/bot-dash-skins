@@ -29,7 +29,7 @@ def main():
 
     scheduler.add_job(
         refresh_caches,
-        CronTrigger(hour=0, minute=0, timezone=TIMEZONE),
+        CronTrigger(hour=1, minute=2, timezone=TIMEZONE),
         id="refresh_caches",
     )
 
@@ -39,7 +39,7 @@ def main():
         id="skin_analysis",
     )
 
-    logger.info("Scheduler ativo. Caches: 00:00 | Análise: 11:00 (%s).", TIMEZONE)
+    logger.info("Scheduler ativo. Caches: 00:45 | Análise: 11:00 (%s).", TIMEZONE)
 
     try:
         scheduler.start()
