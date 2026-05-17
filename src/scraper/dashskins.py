@@ -5,7 +5,7 @@ import time
 from datetime import datetime, timezone
 from typing import Optional
 
-import httpx
+from curl_cffi.requests import Session
 
 from src.config import BASE_URL, REQUEST_HEADERS, REQUEST_TIMEOUT
 from src.models import Skin
@@ -15,17 +15,16 @@ logger = logging.getLogger(__name__)
 API_LISTING = f"{BASE_URL}/api/listing"
 
 
-def _build_client() -> httpx.Client:
-    return httpx.Client(
+def _build_client() -> Session:
+    return Session(
         headers=REQUEST_HEADERS,
         timeout=REQUEST_TIMEOUT,
-        follow_redirects=True,
-        http2=True,
+        impersonate="chrome136",
     )
 
 
 def _fetch_page(
-    client: httpx.Client,
+    client: Session,
     cursor: Optional[str] = None,
     limit: int = 50,
 ) -> Optional[dict]:
@@ -39,10 +38,10 @@ def _fetch_page(
         params["cursor"] = cursor
 
     try:
-        resp = client.get(API_LISTING, params=params)
+        resp = client.get(API_LISTING, params=params, allow_redirects=True)
         resp.raise_for_status()
         return resp.json()
-    except httpx.HTTPError as e:
+    except Exception as e:
         logger.error("Falha ao acessar API: %s", e)
         return None
 

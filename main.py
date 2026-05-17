@@ -35,7 +35,7 @@ def main():
 
     scheduler.add_job(
         analyze,
-        CronTrigger(hour=11, minute=14, timezone=TIMEZONE),
+        CronTrigger(hour=12, minute=53, timezone=TIMEZONE),
         id="skin_analysis",
     )
 
