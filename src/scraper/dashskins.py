@@ -39,7 +39,15 @@ def _fetch_page(
 
     try:
         resp = client.get(API_LISTING, params=params, allow_redirects=True)
-        resp.raise_for_status()
+        if resp.status_code != 200:
+            logger.error(
+                "API retornou HTTP %d. URL: %s | Headers resposta: %s | Body (500 chars): %.500s",
+                resp.status_code,
+                resp.url,
+                dict(resp.headers),
+                resp.text,
+            )
+            resp.raise_for_status()
         return resp.json()
     except Exception as e:
         logger.error("Falha ao acessar API: %s", e)
