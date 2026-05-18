@@ -19,6 +19,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+st.set_page_config(page_title="Bot Skins", page_icon="🔫", layout="wide")
+
 
 @st.cache_resource
 def _start_scheduler():
@@ -39,8 +41,6 @@ def _start_scheduler():
 
 
 _start_scheduler()
-
-st.set_page_config(page_title="Bot Skins", page_icon="🔫", layout="wide")
 
 CARD_CSS = """
 <style>
