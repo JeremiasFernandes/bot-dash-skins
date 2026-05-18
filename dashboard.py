@@ -32,7 +32,7 @@ def _start_scheduler():
     )
     scheduler.add_job(
         analyze,
-        CronTrigger(hour=11, minute=0, timezone=TIMEZONE),
+        CronTrigger(hour=23, minute=38, timezone=TIMEZONE),
         id="skin_analysis",
     )
     scheduler.start()
