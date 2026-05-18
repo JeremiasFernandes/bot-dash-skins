@@ -7,40 +7,16 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import streamlit as st
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.cron import CronTrigger
 
-from src.config import ANALYSIS_RESULTS_PATH, TIMEZONE
+from src.config import ANALYSIS_RESULTS_PATH
 from src.pipeline import analyze, refresh_caches
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
-logger = logging.getLogger(__name__)
 
 st.set_page_config(page_title="Bot Skins", page_icon="🔫", layout="wide")
-
-
-@st.cache_resource
-def _start_scheduler():
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(
-        refresh_caches,
-        CronTrigger(hour=1, minute=2, timezone=TIMEZONE),
-        id="refresh_caches",
-    )
-    scheduler.add_job(
-        analyze,
-        CronTrigger(hour=23, minute=38, timezone=TIMEZONE),
-        id="skin_analysis",
-    )
-    scheduler.start()
-    logger.info("Scheduler iniciado via dashboard. Caches: 01:02 | Análise: 11:00 (%s).", TIMEZONE)
-    return scheduler
-
-
-_start_scheduler()
 
 CARD_CSS = """
 <style>
