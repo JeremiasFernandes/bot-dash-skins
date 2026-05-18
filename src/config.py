@@ -4,6 +4,7 @@ BASE_URL = "https://dashskins.com.br"
 
 LIQUIDITY_CACHE_PATH = Path(__file__).parent.parent / "data" / "liquidity_cache.json"
 EXCHANGE_RATE_CACHE_PATH = Path(__file__).parent.parent / "data" / "exchange_rate.json"
+ANALYSIS_RESULTS_PATH = Path(__file__).parent.parent / "data" / "analysis_results.json"
 
 TIMEZONE = "America/Sao_Paulo"
 

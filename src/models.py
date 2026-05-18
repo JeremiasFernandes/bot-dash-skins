@@ -3,6 +3,9 @@ from datetime import datetime
 from typing import Optional
 
 
+STEAM_CDN = "https://community.akamai.steamstatic.com/economy/image/"
+
+
 @dataclass
 class Skin:
     name: str
@@ -12,6 +15,7 @@ class Skin:
     discount_percent: float
     original_price: float
     url: str
+    image_url: str = ""
     available_at: Optional[datetime] = None
     category: Optional[str] = None
 

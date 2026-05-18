@@ -2,3 +2,4 @@ httpx[http2]>=0.27
 curl_cffi>=0.7
 apscheduler>=3.10,<4
 python-dotenv>=1.0
+streamlit>=1.38

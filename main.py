@@ -22,7 +22,7 @@ def main():
     if "--now" in sys.argv:
         logger.info("Executando imediatamente (--now).")
         refresh_caches()
-        analyze()
+        analyze(collection_window=0)
         return
 
     scheduler = BlockingScheduler()
@@ -35,7 +35,7 @@ def main():
 
     scheduler.add_job(
         analyze,
-        CronTrigger(hour=12, minute=58, timezone=TIMEZONE),
+        CronTrigger(hour=22, minute=36, timezone=TIMEZONE),
         id="skin_analysis",
     )
 

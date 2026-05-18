@@ -8,7 +8,7 @@ from typing import Optional
 from curl_cffi.requests import Session
 
 from src.config import BASE_URL, REQUEST_HEADERS, REQUEST_TIMEOUT
-from src.models import Skin
+from src.models import STEAM_CDN, Skin
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +84,10 @@ def _parse_item(item: dict) -> Optional[Skin]:
         slug = _slugify(item["market_hash_name"])
         available_at = _parse_available_at(item.get("availableAt"))
 
+        image_url = wear_data.get("image", "")
+        if not image_url and item.get("icon_url"):
+            image_url = f"{STEAM_CDN}{item['icon_url']}"
+
         return Skin(
             name=item["name"],
             market_hash_name=item["market_hash_name"],
@@ -92,6 +96,7 @@ def _parse_item(item: dict) -> Optional[Skin]:
             discount_percent=item.get("discount", 0),
             original_price=item.get("steamPrice", 0.0),
             url=f"{BASE_URL}/item/{slug}/{item['_id']}",
+            image_url=image_url,
             available_at=available_at,
             category=item.get("weapon"),
         )
