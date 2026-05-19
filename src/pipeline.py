@@ -11,7 +11,7 @@ from src.scraper import fetch_skins
 
 logger = logging.getLogger(__name__)
 
-COLLECTION_WINDOW_SECONDS = 5 * 60
+COLLECTION_WINDOW_SECONDS = 10 * 60
 RETRY_INTERVAL_SECONDS = 30
 
 
